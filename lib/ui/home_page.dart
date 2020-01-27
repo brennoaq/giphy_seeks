@@ -1,7 +1,10 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:giphy_seeks/ui/git_page.dart';
 import 'package:http/http.dart' as http;
+import 'package:share/share.dart';
+import 'package:transparent_image/transparent_image.dart';
 
 class Homepage extends StatefulWidget {
   @override
@@ -92,7 +95,7 @@ class _HomepageState extends State<Homepage> {
   }
 
   int _getCount(List data) {
-    if (_search == null) {
+    if (_search == null || _search.isEmpty) {
       return data.length;
     } else {
       return data.length + 1;
@@ -106,28 +109,47 @@ class _HomepageState extends State<Homepage> {
           crossAxisCount: 2, crossAxisSpacing: 10.0, mainAxisSpacing: 10.0),
       itemCount: _getCount(snapshot.data["data"]),
       itemBuilder: (contex, index) {
-        if(_search == null || index < snapshot.data["data"].length)
-        return GestureDetector(
-          child: Image.network(
-            snapshot.data["data"][index]["images"]["fixed_height"]["url"],
-            height: 300.0,
-            fit: BoxFit.cover,
-          ),
-        );
+          if (_search == null ||  index < snapshot.data["data"].length)
+          return GestureDetector(
+            child: FadeInImage.memoryNetwork(
+              placeholder: kTransparentImage,
+              image: snapshot.data["data"][index]["images"]["fixed_height"]
+                  ["url"],
+              height: 300.0,
+              fit: BoxFit.cover,
+            ),
+            onTap: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          GitPage(snapshot.data["data"][index])));
+            },
+            onLongPress: () {
+              Share.share(snapshot.data["data"][index]["images"]["fixed_height"]
+                  ["url"]);
+            },
+          );
         else
           return Container(
             child: GestureDetector(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  Icon(Icons.add, color: Colors.white, size: 70.0,),
-                  Text("Carregar mais...",
-                  style: TextStyle(color: Colors.white, fontSize: 22.0),),
+                  Icon(
+                    Icons.add,
+                    color: Colors.white,
+                    size: 70.0,
+                  ),
+                  Text(
+                    "Carregar mais...",
+                    style: TextStyle(color: Colors.white, fontSize: 22.0),
+                  ),
                 ],
               ),
-              onTap: (){
+              onTap: () {
                 setState(() {
-                  _offset +=19;
+                  _offset += 19;
                 });
               },
             ),
